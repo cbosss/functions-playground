@@ -1,0 +1,6 @@
+[build]
+    command = "go build -o netlify/functions/fail ./..."
+
+[build.environment]
+    # Change this path with the path to your repository
+    GO_IMPORT_PATH = "github.com/cbosss/functions-playground"
