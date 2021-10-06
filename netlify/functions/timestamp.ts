@@ -2,7 +2,7 @@ import { Handler } from "@netlify/functions";
 
 export const handler: Handler = async (event, context) => {
   return {
-    statusCode: 200,
+    statusCode: 50,
     body: JSON.stringify({
       timestamp: Date.now(),
     }),

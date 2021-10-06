@@ -23,7 +23,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	if request.Headers[statusCodeHeader] != "" {
 		statusi, err := strconv.ParseInt(request.Headers[statusCodeHeader], 10, 64)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed processing ")
+			return nil, errors.Wrap(err, "failed processing")
 		}
 		status = int(statusi)
 	}
