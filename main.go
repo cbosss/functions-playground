@@ -16,9 +16,13 @@ const notBuilderHeader = "x-nf-not-builder"
 const statusCodeHeader = "x-nf-status-code"
 
 type Response struct {
+	Metadata Metadata `json:"metadata"`
+	events.APIGatewayProxyResponse
+}
+
+type Metadata struct {
 	Version         int  `json:"version"`
 	BuilderFunction bool `json:"builder_function"`
-	events.APIGatewayProxyResponse
 }
 
 func handler(request events.APIGatewayProxyRequest) (*Response, error) {
@@ -41,8 +45,10 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 	}
 
 	return &Response{
-		Version:         1,
-		BuilderFunction: builder,
+		Metadata: Metadata{
+			Version:         1,
+			BuilderFunction: builder,
+		},
 		APIGatewayProxyResponse: events.APIGatewayProxyResponse{
 			StatusCode:      status,
 			Headers:         map[string]string{"content-type": "application/json"},
