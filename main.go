@@ -11,11 +11,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-const failHeader = "x-nf-fail"
+const failHeader = "x-nf-should-fail"
+const notBuilderHeader = "x-nf-not-builder"
 const statusCodeHeader = "x-nf-status-code"
 
-func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	if request.Headers[failHeader] == "fail" {
+type Response struct {
+	Version         int  `json:"version"`
+	BuilderFunction bool `json:"builder_function"`
+	events.APIGatewayProxyResponse
+}
+
+func handler(request events.APIGatewayProxyRequest) (*Response, error) {
+	if request.Headers[failHeader] != "" {
 		return nil, errors.New("fail header detected")
 	}
 
@@ -28,11 +35,20 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 		status = int(statusi)
 	}
 
-	return &events.APIGatewayProxyResponse{
-		StatusCode:      status,
-		Headers:         map[string]string{"content-type": "application/json"},
-		Body:            fmt.Sprintf(`{"timestamp": %s}`, time.Now()),
-		IsBase64Encoded: false,
+	builder := true
+	if request.Headers[notBuilderHeader] != "" {
+		builder = false
+	}
+
+	return &Response{
+		Version:         1,
+		BuilderFunction: builder,
+		APIGatewayProxyResponse: events.APIGatewayProxyResponse{
+			StatusCode:      status,
+			Headers:         map[string]string{"content-type": "application/json"},
+			Body:            fmt.Sprintf(`{"timestamp": %s}`, time.Now()),
+			IsBase64Encoded: false,
+		},
 	}, nil
 }
 
