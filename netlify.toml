@@ -4,3 +4,8 @@
 [build.environment]
     # Change this path with the path to your repository
     GO_IMPORT_PATH = "github.com/cbosss/functions-playground"
+
+[[redirects]]
+    from = "/images/*"
+    to = "/.netlify/functions/resize"
+    status = 200
