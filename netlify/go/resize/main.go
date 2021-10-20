@@ -23,7 +23,7 @@ type Metadata struct {
 	BuilderFunction bool `json:"builder_function"`
 }
 
-var urlRegex = regexp.MustCompile("$(.*)/width/(.*)^")
+var urlRegex = regexp.MustCompile("(.*)/width/(.*)")
 
 func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 	matches := urlRegex.FindStringSubmatch(request.Path)
