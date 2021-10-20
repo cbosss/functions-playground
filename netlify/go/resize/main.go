@@ -27,11 +27,12 @@ var urlRegex = regexp.MustCompile("(.*)/width/(.*)")
 
 func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 	matches := urlRegex.FindStringSubmatch(request.Path)
-	fmt.Println(matches)
 
 	if len(matches) != 3 {
 		return nil, errors.New(fmt.Sprintf("invalid path: %s", request.Path))
 	}
+
+	fmt.Printf("%+#v\n", request)
 
 	resp, err := http.Get(request.Path)
 	if err != nil {
