@@ -1,5 +1,5 @@
 [build]
-    command = "go build -o netlify/functions/test ./..."
+    command = "make build"
 
 [build.environment]
     # Change this path with the path to your repository
