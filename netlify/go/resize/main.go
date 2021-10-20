@@ -1,6 +1,10 @@
 package main
 
 import (
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"net/url"
 	"regexp"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -20,20 +24,21 @@ type Metadata struct {
 var urlRegex = regexp.MustCompile("(.*)/width/(.*)")
 
 func handler(request events.APIGatewayProxyRequest) (*Response, error) {
-	return nil, nil
-	//
-	//matches := urlRegex.FindStringSubmatch(request.Path)
-	//
-	//if len(matches) != 3 {
-	//	return nil, errors.New(fmt.Sprintf("invalid path: %s", request.Path))
-	//}
-	//
-	//u := url.URL{
-	//	Scheme: "https",
-	//	Path:   request.Path,
-	//	Host:   request.Headers["host"],
-	//}
-	//
+
+	matches := urlRegex.FindStringSubmatch(request.Path)
+
+	if len(matches) != 3 {
+		return nil, errors.New(fmt.Sprintf("invalid path: %s", request.Path))
+	}
+
+	u := url.URL{
+		Scheme: "https",
+		Path:   request.Path,
+		Host:   request.Headers["host"],
+	}
+
+	body := u.String()
+
 	//resp, err := http.Get(u.String())
 	//if err != nil {
 	//	return nil, errors.Wrap(err, "failed getting original")
@@ -45,17 +50,17 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 	//	return nil, errors.Wrap(err, "failed reading original body")
 	//}
 	//
-	//return &Response{
-	//	Metadata: Metadata{
-	//		Version:         1,
-	//		BuilderFunction: true,
-	//	},
-	//	APIGatewayProxyResponse: events.APIGatewayProxyResponse{
-	//		StatusCode:      200,
-	//		Body:            base64.StdEncoding.EncodeToString(body),
-	//		IsBase64Encoded: true,
-	//	},
-	//}, nil
+	return &Response{
+		Metadata: Metadata{
+			Version:         1,
+			BuilderFunction: true,
+		},
+		APIGatewayProxyResponse: events.APIGatewayProxyResponse{
+			StatusCode:      200,
+			Body:            base64.StdEncoding.EncodeToString([]byte(body)),
+			IsBase64Encoded: true,
+		},
+	}, nil
 }
 
 func main() {
