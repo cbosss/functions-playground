@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"regexp"
 
 	"github.com/pkg/errors"
@@ -32,9 +33,13 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 		return nil, errors.New(fmt.Sprintf("invalid path: %s", request.Path))
 	}
 
-	fmt.Printf("%+#v\n", request)
+	u := url.URL{
+		Scheme: "https",
+		Path:   request.Path,
+		Host:   request.Headers["host"],
+	}
 
-	resp, err := http.Get(request.Path)
+	resp, err := http.Get(u.String())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed getting original")
 	}
