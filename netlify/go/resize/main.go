@@ -2,13 +2,15 @@ package main
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"regexp"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/pkg/errors"
 )
 
 type Response struct {
@@ -33,23 +35,21 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 
 	u := url.URL{
 		Scheme: "https",
-		Path:   request.Path,
+		Path:   matches[1],
 		Host:   request.Headers["host"],
 	}
 
-	body := u.String()
+	resp, err := http.Get(u.String())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed getting original")
+	}
+	defer resp.Body.Close()
 
-	//resp, err := http.Get(u.String())
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "failed getting original")
-	//}
-	//defer resp.Body.Close()
-	//
-	//body, err := io.ReadAll(resp.Body)
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "failed reading original body")
-	//}
-	//
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed reading original body")
+	}
+
 	return &Response{
 		Metadata: Metadata{
 			Version:         1,
