@@ -1,12 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
-	"io"
+	"image"
+	"image/png"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
+
+	"golang.org/x/image/draw"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -23,7 +28,7 @@ type Metadata struct {
 	BuilderFunction bool `json:"builder_function"`
 }
 
-var urlRegex = regexp.MustCompile("(.*)/width/(.*)")
+var urlRegex = regexp.MustCompile("(.*)/ratio/(.*)")
 
 func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 
@@ -31,6 +36,11 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 
 	if len(matches) != 3 {
 		return nil, errors.New(fmt.Sprintf("invalid path: %s", request.Path))
+	}
+
+	ratio, err := strconv.ParseInt(matches[2], 10, 64)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed parsing ratio")
 	}
 
 	u := url.URL{
@@ -45,9 +55,22 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	// Decode the image (from PNG to image.Image):
+	src, err := png.Decode(resp.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed reading original body")
+		return nil, errors.Wrap(err, "failed to decode original image")
+	}
+
+	// Set the expected size that you want:
+	dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X/int(ratio), src.Bounds().Max.Y/int(ratio)))
+
+	// resize
+	draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+
+	body := bytes.NewBuffer(nil)
+	err = png.Encode(body, dst)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to encode")
 	}
 
 	return &Response{
