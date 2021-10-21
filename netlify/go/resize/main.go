@@ -80,7 +80,7 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 		},
 		APIGatewayProxyResponse: events.APIGatewayProxyResponse{
 			StatusCode:      200,
-			Body:            base64.StdEncoding.EncodeToString([]byte(body)),
+			Body:            base64.StdEncoding.EncodeToString(body.Bytes()),
 			IsBase64Encoded: true,
 		},
 	}, nil
