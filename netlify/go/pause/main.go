@@ -29,10 +29,10 @@ type Body struct {
 
 func (b Body) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Start     string
-		End       string
-		StartUnix int64
-		EndUnix   int64
+		Start     string `json:"start"`
+		End       string `json:"end"`
+		StartUnix int64  `json:"start_unix"`
+		EndUnix   int64  `json:"end_unix"`
 	}{
 		b.Start.Format(time.RFC3339),
 		b.End.Format(time.RFC3339),
