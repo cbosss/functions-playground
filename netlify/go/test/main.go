@@ -14,6 +14,8 @@ import (
 const failHeader = "x-nf-should-fail"
 const notBuilderHeader = "x-nf-not-builder"
 const statusCodeHeader = "x-nf-status-code"
+const staleAtHeader = "x-nf-stale-at"
+const freshForHeader = "x-nf-fresh-for"
 
 type Response struct {
 	Metadata Metadata `json:"metadata"`
@@ -44,6 +46,19 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 		builder = false
 	}
 
+	headers := map[string]string{"content-type": "application/json"}
+
+	if v := request.Headers[freshForHeader]; v != "" {
+		if v == "invalid" {
+			headers[staleAtHeader] = "invalid"
+		}
+
+		if dur, err := time.ParseDuration(v); err == nil {
+			timestamp := time.Now().Add(dur)
+			headers[staleAtHeader] = strconv.FormatInt(timestamp.Unix(), 10)
+		}
+	}
+
 	return &Response{
 		Metadata: Metadata{
 			Version:         1,
@@ -51,7 +66,7 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 		},
 		APIGatewayProxyResponse: events.APIGatewayProxyResponse{
 			StatusCode:      status,
-			Headers:         map[string]string{"content-type": "application/json"},
+			Headers:         headers,
 			Body:            fmt.Sprintf(`{"timestamp": %s}`, time.Now()),
 			IsBase64Encoded: false,
 		},
