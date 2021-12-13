@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,11 +12,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-const failHeader = "x-nf-should-fail"
-const notBuilderHeader = "x-nf-not-builder"
-const statusCodeHeader = "x-nf-status-code"
-const staleAtHeader = "x-nf-stale-at"
-const freshForHeader = "x-nf-fresh-for"
+const (
+	failHeader       = "x-nf-should-fail"
+	notBuilderHeader = "x-nf-not-builder"
+	statusCodeHeader = "x-nf-status-code"
+	staleAtHeader    = "x-nf-stale-at"
+	freshForHeader   = "x-nf-fresh-for"
+	headerSizeKB     = "x-nf-header-size-kb"
+)
 
 type Response struct {
 	Metadata Metadata `json:"metadata"`
@@ -46,7 +50,10 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 		builder = false
 	}
 
-	headers := map[string]string{"content-type": "application/json"}
+	// if this fails it will just be 0
+	size, _ := strconv.ParseInt(request.Headers[headerSizeKB], 10, 64)
+	headers := generateHeaders(int(size))
+	headers["content-type"] = "application/json"
 
 	if v := request.Headers[freshForHeader]; v != "" {
 		if v == "invalid" {
@@ -71,6 +78,24 @@ func handler(request events.APIGatewayProxyRequest) (*Response, error) {
 			IsBase64Encoded: false,
 		},
 	}, nil
+}
+
+func generateHeaders(n int) map[string]string {
+	headers := make(map[string]string)
+	for i := 0; i < n; i++ {
+		headers[strconv.FormatInt(int64(i), 10)] = randString(1024)
+	}
+	return headers
+}
+
+const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func randString(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 func main() {
