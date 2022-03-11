@@ -9,3 +9,9 @@
     from = "/images/*"
     to = "/.netlify/functions/resize"
     status = 200
+
+[[redirects]]
+    from = "/easter.js"
+    to = "/empty.js"
+    status = 200
+    force = true
