@@ -15,3 +15,9 @@
     to = "/empty.js"
     status = 200
     force = true
+
+[[redirects]]
+    from = "/sp/*"
+    to = "/:splat"
+    status = 200
+    force = true
