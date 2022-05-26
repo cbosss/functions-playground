@@ -10,12 +10,14 @@
     to = "/fr/:splat"
     status = 301
     conditions = {Language = ["fr"]}
+    force = true
 
 [[redirects]]
     from = "/*"
     to = "/de/:splat"
     status = 301
     conditions = {Language = ["de"]}
+    force = true
 
 [[redirects]]
     from = "/images/*"
